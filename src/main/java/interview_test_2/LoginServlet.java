@@ -85,6 +85,9 @@ public class LoginServlet extends HttpServlet {
 			
 			String sql = "SELECT * FROM users WHERE username = ? AND password = ?";
             PreparedStatement stmt = conn.prepareStatement(sql);
+
+
+			// TODO clean username and password in case of sql injection
             stmt.setString(1, username);
             stmt.setString(2, password);
 
