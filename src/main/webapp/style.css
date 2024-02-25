@@ -1,0 +1,23 @@
+.container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh; /* Set height to viewport height for vertical centering */
+  }
+  
+  .content {
+    text-align: center; /* Align elements horizontally */
+  }
+  
+  .element {
+    margin-bottom: 20px; /* Add margin between stacked elements */
+  }
+  .element button {
+    margin-top: 10px; /* Add 10px of space between inputs and button */
+  }
+
+
+input[type="text"],
+input[type="password"] {
+  width: 200px; /* Adjust the width as needed */
+}

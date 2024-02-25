@@ -48,18 +48,19 @@ public class LoginServlet extends HttpServlet {
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 
 		
-		System.out.println( System.getProperty("user.dir"));
+		// putting password in text file that isn't stored in repository
+		// TODO use the aws secret manager 
 		File myObj = new File("password.txt");
         Scanner myReader = new Scanner(myObj);
         
         String root_password = myReader.nextLine();
-        
         myReader.close();
+        
+        // TODO receive hash of password here instead of actual password, check hash against database
 	    String username = request.getParameter("username");
 	    String password = request.getParameter("password");
 
 	    response.setContentType("text/html;charset=UTF-8");
-        PrintWriter out = response.getWriter();
 
         Connection conn = null;
         Properties connectionProps = new Properties();
@@ -76,12 +77,11 @@ public class LoginServlet extends HttpServlet {
 			conn = DriverManager.getConnection(
 					"jdbc:mysql://database-1.ci5u66lyoqgj.us-east-1.rds.amazonaws.com:3306/mydatabase?characterEncoding=utf8",
 			        connectionProps);
-			System.out.println("Connected to database");
-			
+
+// 			for local database
 //			conn = DriverManager.getConnection(
 //					"jdbc:mysql://localhost:3306/mydatabase?characterEncoding=utf8",
 //			        connectionProps);
-//			System.out.println("Connected to database");
 			
 			String sql = "SELECT * FROM users WHERE username = ? AND password = ?";
             PreparedStatement stmt = conn.prepareStatement(sql);
@@ -101,7 +101,7 @@ public class LoginServlet extends HttpServlet {
 		        response.sendRedirect(String.format(url));
 		    } else {
 		        // If login fails, redirect back to the login page with an error message
-		        response.sendRedirect("login.jsp?error=1");
+		        response.sendRedirect("index.jsp?error=1");
 		    }
 	
 		} catch (SQLException e) {
