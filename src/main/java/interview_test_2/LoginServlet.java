@@ -5,21 +5,15 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
-
-import java.io.PrintWriter;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-
-import java.io.File;  // Import the File class
-
 import java.util.Properties;
 import com.amazonaws.services.secretsmanager.*;
 import com.amazonaws.services.secretsmanager.model.GetSecretValueRequest;
 import com.amazonaws.services.secretsmanager.model.GetSecretValueResult;
-
 
 import org.json.JSONObject;
 
@@ -44,20 +38,17 @@ public class LoginServlet extends HttpServlet {
 	 */
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 
-		
+		String secretName = "hostedftp";
+	    System.out.println("Requesting secret...");
+	    AWSSecretsManager client = AWSSecretsManagerClientBuilder.standard().withRegion("us-east-1").build();
+	    GetSecretValueRequest getSecretValueRequest = new GetSecretValueRequest().withSecretId(secretName);
+	    GetSecretValueResult getSecretValueResult = client.getSecretValue(getSecretValueRequest);
+	    System.out.println("secret retrieved ");
+	    String secretString = getSecretValueResult.getSecretString();
+		JSONObject jsonObject = new JSONObject(secretString);
+		String rds_username = jsonObject.getString("username");
+		String rds_password = jsonObject.getString("password");
 		// putting password in text file that isn't stored in repository
-		// TODO use the aws secret manager 
-		File myObj = new File("password.txt");
-        Scanner myReader = new Scanner(myObj);
-        
-        String root_password = myReader.nextLine();
-        myReader.close();
-        
-        // TODO receive hash of password here instead of actual password, check hash against database
-	    String username = request.getParameter("username");
-	    String password = request.getParameter("password");
-
-	    response.setContentType("text/html;charset=UTF-8");
 
         Connection conn = null;
         Properties connectionProps = new Properties();
@@ -70,19 +61,22 @@ public class LoginServlet extends HttpServlet {
 		} 
         try {
 			conn = DriverManager.getConnection(
-					"jdbc:mysql://database-1.ci5u66lyoqgj.us-east-1.rds.amazonaws.com:3306/mydatabase?characterEncoding=utf8",
-			        connectionProps);
-
-// 			for local database
-//			conn = DriverManager.getConnection(
-//					"jdbc:mysql://localhost:3306/mydatabase?characterEncoding=utf8",
-//			        connectionProps);
+				"jdbc:mysql://database-1.ci5u66lyoqgj.us-east-1.rds.amazonaws.com:3306/mydatabase?characterEncoding=utf8",
+				connectionProps);
+				
+				// 			for local database
+				//			conn = DriverManager.getConnection(
+				//					"jdbc:mysql://localhost:3306/mydatabase?characterEncoding=utf8",
+				//			        connectionProps);
+			String username = request.getParameter("username");
+			String password = request.getParameter("password");
+			response.setContentType("text/html;charset=UTF-8");
 			
 			String sql = "SELECT * FROM users WHERE username = ? AND password = ?";
             PreparedStatement stmt = conn.prepareStatement(sql);
 
 
-			// TODO clean username and password in case of sql injection
+			// Using prepared statements to defend against sql injections.
             stmt.setString(1, username);
             stmt.setString(2, password);
 
