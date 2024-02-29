@@ -6,20 +6,27 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
+import java.io.PrintWriter;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-import java.io.File; 
+import java.io.File;  // Import the File class
 
 import java.util.Properties;
-import java.util.Scanner;
+import com.amazonaws.services.secretsmanager.*;
+import com.amazonaws.services.secretsmanager.model.GetSecretValueRequest;
+import com.amazonaws.services.secretsmanager.model.GetSecretValueResult;
+
+
+import org.json.JSONObject;
 
 /**
  * Servlet implementation class LoginServlet
  */
+
 public class LoginServlet extends HttpServlet {
 	private static final long serialVersionUID = 1L;
        
@@ -37,6 +44,7 @@ public class LoginServlet extends HttpServlet {
 	 */
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 
+		
 		// putting password in text file that isn't stored in repository
 		// TODO use the aws secret manager 
 		File myObj = new File("password.txt");
@@ -53,10 +61,8 @@ public class LoginServlet extends HttpServlet {
 
         Connection conn = null;
         Properties connectionProps = new Properties();
-        connectionProps.put("user", "admin");
-        
-        
-        connectionProps.put("password", root_password);
+        connectionProps.put("user", rds_username);
+        connectionProps.put("password", rds_password);
         try {
 			Class.forName("com.mysql.jdbc.Driver");
 		} catch (ClassNotFoundException e) {
@@ -70,19 +76,18 @@ public class LoginServlet extends HttpServlet {
 // 			for local database
 //			conn = DriverManager.getConnection(
 //					"jdbc:mysql://localhost:3306/mydatabase?characterEncoding=utf8",
-//			        "root", "asdfghjk1");
+//			        connectionProps);
 			
 			String sql = "SELECT * FROM users WHERE username = ? AND password = ?";
             PreparedStatement stmt = conn.prepareStatement(sql);
+
+
+			// TODO clean username and password in case of sql injection
             stmt.setString(1, username);
             stmt.setString(2, password);
 
-            System.out.println(stmt);
-            
             // Execute query
             ResultSet rs = stmt.executeQuery();
-            
-            
              
     	    if (rs.next()) {
     	    	
@@ -96,8 +101,6 @@ public class LoginServlet extends HttpServlet {
 		        // If login fails, redirect back to the login page with an error message
 		        response.sendRedirect("index.jsp?error=1");
 		    }
-    	    
-    	    
 	
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
