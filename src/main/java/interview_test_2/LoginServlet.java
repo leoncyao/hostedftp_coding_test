@@ -1,20 +1,18 @@
 package interview_test_2;
 
 import jakarta.servlet.ServletException;
-import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
-import java.io.PrintWriter;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-import java.io.File;  // Import the File class
+import java.io.File; 
 
 import java.util.Properties;
 import java.util.Scanner;
@@ -35,19 +33,10 @@ public class LoginServlet extends HttpServlet {
     }
 
 	/**
-	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
-	 */
-	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		// TODO Auto-generated method stub
-		response.getWriter().append("Served at: ").append(request.getContextPath());
-	}
-
-	/**
 	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse response)
 	 */
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 
-		
 		// putting password in text file that isn't stored in repository
 		// TODO use the aws secret manager 
 		File myObj = new File("password.txt");
@@ -81,18 +70,19 @@ public class LoginServlet extends HttpServlet {
 // 			for local database
 //			conn = DriverManager.getConnection(
 //					"jdbc:mysql://localhost:3306/mydatabase?characterEncoding=utf8",
-//			        connectionProps);
+//			        "root", "asdfghjk1");
 			
 			String sql = "SELECT * FROM users WHERE username = ? AND password = ?";
             PreparedStatement stmt = conn.prepareStatement(sql);
-
-
-			// TODO clean username and password in case of sql injection
             stmt.setString(1, username);
             stmt.setString(2, password);
 
+            System.out.println(stmt);
+            
             // Execute query
             ResultSet rs = stmt.executeQuery();
+            
+            
              
     	    if (rs.next()) {
     	    	
@@ -106,6 +96,8 @@ public class LoginServlet extends HttpServlet {
 		        // If login fails, redirect back to the login page with an error message
 		        response.sendRedirect("index.jsp?error=1");
 		    }
+    	    
+    	    
 	
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
